@@ -88,11 +88,11 @@ class DelayPacket
 {
 public:
 	virtual ~DelayPacket() {
-		if (_ptr) delete[] _ptr;
-		_ptr = NULL;
+		delete[] _ptr;
+		_ptr = nullptr;
 	}
 
-	DelayPacket(int size, const void *src = NULL) {
+	explicit DelayPacket(int size, const void *src = nullptr) {
 		_ptr = new unsigned char[size];
 		_size = size;
 		if (src) {
@@ -101,30 +101,30 @@ public:
 	}
 
 	unsigned char* ptr() { return _ptr; }
-	const unsigned char* ptr() const { return _ptr; }
+	[[nodiscard]] const unsigned char* ptr() const { return _ptr; }
 
-	int size() const { return _size; }
-	IUINT32 ts() const { return _ts; }
+	[[nodiscard]] int size() const { return _size; }
+	[[nodiscard]] IUINT32 ts() const { return _ts; }
 	void setts(IUINT32 ts) { _ts = ts; }
 
 protected:
 	unsigned char *_ptr;
 	int _size;
-	IUINT32 _ts;
+	IUINT32 _ts{};
 };
 
 // 均匀分布的随机数
 class Random
 {
 public:
-	Random(int size) {
+	explicit Random(int size) {
 		this->size = 0;
 		seeds.resize(size);
 	}
 
 	int random() {
 		int x, i;
-		if (seeds.size() == 0) return 0;
+		if (seeds.empty()) return 0;
 		if (size == 0) { 
 			for (i = 0; i < (int)seeds.size(); i++) {
 				seeds[i] = i;
@@ -154,7 +154,7 @@ public:
 	// lostrate: 往返一周丢包率的百分比，默认 10%
 	// rttmin：rtt最小值，默认 60
 	// rttmax：rtt最大值，默认 125
-	LatencySimulator(int lostrate = 10, int rttmin = 60, int rttmax = 125, int nmax = 1000): 
+	explicit LatencySimulator(int lostrate = 10, int rttmin = 60, int rttmax = 125, int nmax = 1000):
 		r12(100), r21(100) {
 		current = iclock();		
 		this->lostrate = lostrate / 2;	// 上面数据是往返丢包率，单程除以2
@@ -189,7 +189,7 @@ public:
 			if (r21.random() < lostrate) return;
 			if ((int)p21.size() >= nmax) return;
 		}
-		DelayPacket *pkt = new DelayPacket(size, data);
+		auto *pkt = new DelayPacket(size, data);
 		current = iclock();
 		IUINT32 delay = rttmin;
 		if (rttmax > rttmin) delay += rand() % (rttmax - rttmin);
@@ -206,10 +206,10 @@ public:
 		DelayTunnel::iterator it;
 		if (peer == 0) {
 			it = p21.begin();
-			if (p21.size() == 0) return -1;
+			if (p21.empty()) return -1;
 		}	else {
 			it = p12.begin();
-			if (p12.size() == 0) return -1;
+			if (p12.empty()) return -1;
 		}
 		DelayPacket *pkt = *it;
 		current = iclock();

@@ -20,7 +20,7 @@ LatencySimulator *vnet;
 // 模拟网络：模拟发送一个 udp包
 int udp_output(const char *buf, int len, ikcpcb *kcp, void *user)
 {
-	union { int id; void *ptr; } parameter;
+	union { int id; void *ptr; } parameter{};
 	parameter.ptr = user;
 	vnet->send(parameter.id, buf, len);
 	return 0;
@@ -177,5 +177,18 @@ avgrtt=156 maxrtt=571
 fast mode result (20207ms):
 avgrtt=138 maxrtt=392
 */
+
+
+/*
+ 5600G win10
+default mode result (39396ms):
+avgrtt=10793 maxrtt=19417 tx=347
+
+normal mode result (20188ms):
+avgrtt=245 maxrtt=948 tx=1060
+
+fast mode result (20298ms):
+avgrtt=194 maxrtt=456 tx=1106
+ */
 
 
